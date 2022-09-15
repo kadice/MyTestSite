@@ -47,15 +47,16 @@
 </div>
 <script>
     $(document).ready(function () {
-        setTimeout(() => {
-            $("#tbRanking").datatable()
-        }, 250) //customize this
+        $("#tbRanking").dataTable({ paging: false });
+        // setTimeout(() => {
+        //     $("#tbRanking").datatable()
+        // }, 250) //customize this
     })
     Vue.createApp({
         data() {
             return {
                 appTitle: "救救可憐光戰",
-                ranking: [],
+                ranking: []
             }
         },
         methods: {
@@ -108,7 +109,6 @@
 
                 this.ranking = scheduleList;
             }
-        },
-
+        }
     }).mount('#appRanking');
 </script>
