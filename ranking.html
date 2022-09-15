@@ -47,6 +47,9 @@
 </div>
 <script>
     $(document).ready(function () {
+        setTimeout(() => {
+            $("#tbRanking").datatable()
+        }, 250) //customize this
     })
     Vue.createApp({
         data() {
@@ -104,9 +107,6 @@
                 scheduleList = scheduleList.slice(0, 20);
 
                 this.ranking = scheduleList;
-                setTimeout(() => {
-                    $("#tbRanking").datatable()
-                }, 250) //customize this
             }
         },
 
