@@ -6,6 +6,6 @@
     if (page.indexOf('.html' > 0) && page.indexOf('index.html') < 0) {
         let url = base + ((window.origin == 'file://') ? "index.html" : "") + "?to=" + page;
         console.log(url);
-        window.location.href = url;
+        //window.location.href = url;
     }
 }
