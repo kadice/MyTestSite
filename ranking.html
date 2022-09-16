@@ -2,14 +2,47 @@
     <div class="col-lg-11 col-xxl-10 mx-auto">
         <div id="appRanking">
             <h4>{{ appTitle }}</h4>
+
+
             <div>
                 <div style="display: flex;">
-
-                    <button type="button" class="btn btn-lg btn-warning mx-auto"
-                        v-on:click="getRanking">　按　下　我　獲　得　解　脫　</button>
+                    <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify" style="width: 300px"
+                        :disabled="(gotIt > 3)? '' : disabled" v-on:click="getRawRanking">{{ btnText }}</button>
 
                 </div>
             </div>
+            <br>
+
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-2 col-xl-1"><label>總價Top</label></div>
+                        <div class="col-lg-2 col-xl-1">
+                            <input type="number" v-model="top_Q" class="form-control">
+                        </div>
+                        <div class="col-lg-2 col-xl-1"><label>產品數</label></div>
+                        <div class="col-lg-6 col-xl-3">
+                            <select id="queueLen_Q" name="queueLen_Q[]" class="select2" multiple="multiple">
+                                <option v-for="i in 4" :value="i+2" v-text="(i+2)+'件產品'"></option>
+                            </select>
+                            <input type="text" v-model="queueLen_Q" id="queueLen_Q_value" style="display: none;">
+                        </div>
+                        <div class="col-lg-2 col-xl-1"><label>排除產品</label></div>
+                        <div class="col-lg-10 col-xl-5">
+                            <select id="exProd_Q" name="exProd_Q[]" class="select2" multiple="multiple">
+                                <option v-for="item in prodDesc" :value="item.id" v-text="item.desc"></option>
+                            </select>
+                            <input type="text" v-model="exProd_Q" id="exProd_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="row">
+                    </div>
+                </div>
+            </div>
+            <br>
+
+
             <table id="tbRanking" class="table">
                 <thead>
                     <tr>
@@ -21,23 +54,27 @@
                         <th style="max-width: auto">島產品5</th>
                         <th style="max-width: auto">島產品6</th>
                         <th style="max-width: 50px">總價</th>
-                        <th style="width: 100px"></th>
+                        <th style="width: 80px" class="no-sort"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(item,index) in ranking">
+                    <tr v-for="(item,index) in compRanking">
                         <td>
                             <label v-text="index+1"></label>
                         </td>
-                        <td v-for="(prod, pIdx) in item.schedule">
+                        <td v-for="(prod, pIdx) in item.queue">
                             <label>{{prod.desc}}</label><br />
-                            <small> |{{prod.pop}} |{{prod.need}} |{{prod.priceX}}</small>
+                            <small> |{{prod.prop1}} |{{prod.prop2}} | {{prod.hour}}h</small><br />
+                            <small> |{{prod.pop}} |{{prod.need}} | {{prod.priceX}}</small>
                         </td>
-                        <td v-for="i in (6-item.schedule.length)">
+                        <td v-for="i in (6-item.queue.length)">
                             <label>--</label>
                         </td>
                         <td>
                             <label v-text="Math.floor(item.totalPriceX*100)/100"></label>
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-dark" tabindex="-1">(施工中)</button>
                         </td>
                     </tr>
                 </tbody>
@@ -45,44 +82,102 @@
         </div>
     </div>
 </div>
+<script type="text/javascript" src="./page.js"></script>
 <script>
     $(document).ready(function () {
-        $("#tbRanking").dataTable({ paging: false });
-        // setTimeout(() => {
-        //     $("#tbRanking").datatable()
-        // }, 250) //customize this
     })
     Vue.createApp({
         data() {
             return {
                 appTitle: "救救可憐光戰",
-                ranking: []
+                gotIt: 0,
+                top_Q: 100,
+                queueLen_Q: "[]",
+                exProd_Q: "[]",
+                rawRanking: [],
+                prodDesc: [],
+            }
+        },
+        async created() {
+            //建立多選資料
+            if (localStorage.myRawProds) {
+                let myRawProds = JSON.parse(localStorage.myRawProds);
+                if (myRawProds.length > 0) {
+                    //移除非啟用(無法生產)的產品
+                    myRawProds = myRawProds.filter(m => m.enabled == true);
+                    this.prodDesc = myRawProds.map(({ id, desc }) => ({ id, desc }));
+                }
+            }
+            else {
+                localStorage.myRawProds = JSON.stringify(this.rawProds);
+                alert("載入失敗!");
+            }
+        },
+        async mounted() {
+            //建立多選物件
+            $(".select2").select2({ placeholder: "請選擇..." })
+                //綁定事件：將多選的結果寫入隱藏的input欄位
+                .on('input', function () {
+                    $("#" + $(this).attr("id") + "_value").val(JSON.stringify($(this).val()))[0].dispatchEvent(new CustomEvent('input'));
+                });
+
+            //this.getRawRanking();
+        },
+        computed: {
+            compRanking() {
+                console.log('computed compRanking');
+                let compRanking = this.rawRanking;
+                if (compRanking.length > 0) {
+                    //篩選產品數
+                    if (JSON.parse(this.queueLen_Q).length > 0) {
+                        let arr = JSON.parse(this.queueLen_Q);
+                        compRanking = compRanking.filter(m => arr.includes("" + m.queue.length));
+                    }
+                    //排除指定產品
+                    if (JSON.parse(this.exProd_Q).length > 0) {
+                        let arr = JSON.parse(this.exProd_Q);
+                        compRanking = compRanking.filter(m => 
+                            m.queue.filter(m1 => {
+                                return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                            }).length == 0
+                        );
+                    }
+                    //依總價排序 //取前n筆資料
+                    compRanking = compRanking.sort((a, b) => b.totalPriceX - a.totalPriceX).slice(0, this.top_Q);
+                }
+                return compRanking;
+            },
+            btnText() {
+                return (this.gotIt >= 3) ? "一直按是想幹嘛啦" : "按下我獲得解脫";
             }
         },
         methods: {
-            getRanking() {
+            toFloat2(x) {
+                return Number.parseFloat(x).toFixed(2);
+            },
+            getRawRanking() {
                 let myRawProds = JSON.parse(localStorage.myRawProds);
 
-                //移除無法生產的產品
-                myRawProds = myRawProds.filter(m => m.mark == true);
+                //移除非啟用(無法生產)的產品
+                myRawProds = myRawProds.filter(m => m.enabled == true);
 
                 //第一層
-                var scheduleList = myRawProds.map((m) => ({ schedule: [m], totalHours: m.hour, totalPriceX: 0.0 + m.priceX }));
-                //第二～六層
-                for (let i = 0; i < 5; i++) {
-                    scheduleList = scheduleList.flatMap(ori => {
-                        let last = ori.schedule[ori.schedule.length - 1];
+                let rankingData = myRawProds.map((m) => ({ queue: [m], totalHours: m.hour, totalPriceX: 0.0 + Number.parseFloat(m.priceX) }));
+                //抓第二～六層
+                for (let i = 0; i < 0; i++) {
+                    rankingData = rankingData.flatMap(ori => {
+                        let last = ori.queue[ori.queue.length - 1];
                         let replacement = myRawProds
                             //找出與last特性相同且總耗時<=24的產品
                             .filter(m1 => m1.id != last.id
                                 && ((m1.prop1 != "" && m1.prop1 == last.prop1) || (m1.prop2 != "" && m1.prop2 == last.prop2))
                                 && (m1.hour + ori.totalHours <= 24))
                             //檢查產品重複次數，已出現兩次就不放入
-                            .filter(m2 => ori.schedule.filter(m3 => m3.id == m2.id).length < 2)
+                            .filter(m2 => ori.queue.filter(m3 => m3.id == m2.id).length < 2)
                             //對此產品做檢查，並回傳處理結果
                             .map(m4 => {
                                 let newEle = JSON.parse(JSON.stringify(ori));
-                                newEle.schedule.push(m4);
+                                newEle.queue.push(m4);
                                 newEle.totalHours += m4.hour;
                                 newEle.totalPriceX += m4.priceX * 2.0;
                                 return newEle;
@@ -90,24 +185,44 @@
                         return (replacement.length > 0) ? replacement : [ori];
                     });
                 }
-                //處理只是順序不同的重複組合
-                const set = new Set();
-                scheduleList = scheduleList.filter(m => {
-                    const mySet = m.schedule.map(m2 => m2.id).sort();
-                    if (set.has(JSON.stringify(mySet))) {
+
+                //移除只是順序不同的重複組合
+                const allSet = new Set();
+                rankingData = rankingData.filter(m => {
+                    const thisQueSet = m.queue.map(m2 => m2.id).sort();
+                    if (allSet.has(JSON.stringify(thisQueSet))) {
                         return false;
                     }
                     else {
-                        return set.add(JSON.stringify(mySet));
+                        return allSet.add(JSON.stringify(thisQueSet));
                     }
                 });
 
-                //排序
-                scheduleList = scheduleList.sort((a, b) => b.totalPriceX - a.totalPriceX);
-                //取前20
-                scheduleList = scheduleList.slice(0, 20);
+                //依總價排序
+                rankingData = rankingData.sort((a, b) => b.totalPriceX - a.totalPriceX);
 
-                this.ranking = scheduleList;
+                this.rawRanking = rankingData;
+
+                //繪製...?
+                this.gotIt += 1;
+                if (this.gotIt <= 1) {
+                    this.$nextTick(() => {
+                        //setTimeout(() => {
+                        //建立dataTable
+                        $("#tbRanking").dataTable({
+                            "iDisplayLength": 50,
+                            "lengthMenu": [
+                                [10, 25, 50, 100, 200, 500, -1],
+                                [10, 25, 50, 100, 200, 500, 'All'],
+                            ],
+                            "columnDefs": [
+                                { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
+                            ]
+                        });
+                        //}, 800);
+
+                    });
+                }
             }
         }
     }).mount('#appRanking');

@@ -1,0 +1,65 @@
+/* ============ table.dataTable ============ */
+/*input寬度100%避免炸版*/
+table.dataTable input[type=text],
+table.dataTable input[type=number] {
+    width: 100%;
+}
+
+/*select寬度100%避免炸版*/
+table.dataTable select {
+    width: 100%;
+    height: 30px;
+}
+
+/*數字靠右*/
+table.dataTable td.td-num {
+    text-align: right;
+}
+
+/* ============ table.dataTable.compact ============ */
+/*標題靠左*/
+table.dataTable.compact thead th,
+table.dataTable.compact thead td {
+    padding-left: 8px !important;
+    padding-right: 20px !important;
+}
+
+/*放大checkbox並和文字對齊*/
+table.dataTable.compact input[type=checkbox] {
+    width: 20px;
+    height: 20px;
+    margin: 5px 4px;
+}
+
+/*使表格內的label和input文字對齊*/
+table.dataTable.compact th label,
+table.dataTable.compact td label {
+    padding: 3px 4px;
+}
+
+/* ============ select2 ============ */
+.select2 {
+    width: 100%;
+}
+
+.select2-selection {
+    line-height: 18px;
+}
+
+/*input配合select2高度*/
+.form-control {
+    padding: 3px 0.75rem;
+}
+
+/* ============ 其他未分類 ============ */
+.btn-justify {
+    text-align: justify;
+    text-align-last: justify;
+    -moz-text-align-last: justify;
+}
+
+.card label {
+    font-weight: bold;
+    padding: 3px;
+    color: darkslategray;
+}

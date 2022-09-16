@@ -1,40 +1,78 @@
 <style>
-    #tbProds input[type=text],
-    #tbProds input[type=number] {
-        width: 100%;
-    }
-
-    #tbProds select {
-        width: 100%;
-        height: 30px;
-    }
-
-    #tbProds input[type=checkbox] {
-        transform: scale(1.5);
-        margin-top: 9px;
-    }
-
-    #tbProds th label,
-    #tbProds td label {
-        padding: 3px 4px;
-    }
 </style>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <div class="row">
     <div class="col-lg-11 col-xxl-10 mx-auto">
         <div id="appProds">
             <h4>{{ appTitle }}</h4>
-            <div style="position: relative;">
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-1"><label>耗時</label></div>
+                        <div class="col-2">
+                            <select id="hour_Q" name="hour_Q[]" class="select2" multiple="multiple">
+                                <option v-for="hour in uniHour" :value="hour" v-text="hour+'時'"></option>
+                            </select>
+                            <input type="text" v-model="hour_Q" id="hour_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1"><label>特性1</label></div>
+                        <div class="col-5">
+                            <select id="prop1_Q" name="prop1_Q[]" class="select2" multiple="multiple">
+                                <option v-for="prop1 in uniProp1" :value="prop1" v-text="prop1"></option>
+                            </select>
+                            <input type="text" v-model="prop1_Q" id="prop1_Q_value" style="display: none;">
+                        </div>
+                        <div class="col-1"><label>人氣度</label></div>
+                        <div class="col-5">
+                            <select id="pop_Q" name="pop_Q[]" class="select2" multiple="multiple">
+                                <option v-for="pop in popData" :value="pop.value" v-text="pop.text"></option>
+                            </select>
+                            <input type="text" v-model="pop_Q" id="pop_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-1"><label>特性2</label></div>
+                        <div class="col-5">
+                            <select id="prop2_Q" name="prop2_Q[]" class="select2" multiple="multiple">
+                                <option v-for="prop2 in uniProp2" :value="prop2" v-text="prop2"></option>
+                            </select>
+                            <input type="text" v-model="prop2_Q" id="prop2_Q_value" style="display: none;">
+                        </div>
+                        <div class="col-1"><label>需求</label></div>
+                        <div class="col-5">
+                            <select id="need_Q" name="need_Q[]" class="select2" multiple="multiple">
+                                <option v-for="need in needData" :value="need.value" v-text="need.text"></option>
+                            </select>
+                            <input type="text" v-model="need_Q" id="need_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div style="position: relative; padding: 5px 0px;">
                 <div style="position: absolute; z-index:999;">
                     <!-- <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="editAll ? '' : disabled"
                         v-on:click="addRow">新增島產品</button> -->
-                    <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="editAll ? '' : disabled"
+                    <button type="button" class="btn btn btn-outline-secondary" :disabled="editAll ? '' : disabled"
                         v-on:click="resetRawProds">重置所有資料</button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" v-if="editAll==false"
-                        v-on:click="onEditAll">編輯全部</button>
-                    <button type="button" class="btn btn-sm btn-primary" v-else v-on:click="onEditAll">結束編輯</button>
+                        <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                            v-on:click="onEditAll('all')">編輯全部</button>
+                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                        v-on:click="onEditAll('pop')">編輯人氣度</button>
+                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                        v-on:click="onEditAll('need')">編輯需要</button>
+                    <button type="button" class="btn btn btn-primary" v-if="editAll!=''"
+                        v-on:click="onEditAll('')">結束編輯</button>
                 </div>
             </div>
-            <table id="tbProds" class="table">
+
+
+            <table id="tbProds" class="display compact">
                 <thead>
                     <tr>
                         <th style="max-width: 40px">編號</th>
@@ -47,68 +85,81 @@
                         <th style="width: 70px">人氣度</th>
                         <th style="width: 100px">需要</th>
                         <th style="max-width: 120px">加成</th>
+                        <th style="max-width: 120px">成本</th>
                         <th style="max-width: 50px">時價</th>
-                        <th style="max-width: 40px">關注</th>
-                        <th style="width: 100px"></th>
+                        <th style="max-width: 50px">時價/h</th>
+                        <th style="max-width: 35px">啟用</th>
+                        <th style="max-width: 35px">關注</th>
+                        <th style="width: 40px"></th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(item,index) in compProds">
+                    <tr v-for="(item,index) in compProds" :style="(item.mark==true)?'color: red;':''">
                         <td>
-                            <input v-if="editAll==true" type="text" v-model="item.id">
+                            <input v-if="editAll=='all'" type="text" v-model="item.id">
                             <label v-else v-text="item.id"></label>
                         </td>
                         <td>
-                            <input v-if="editing==index || editAll==true" type="text" v-model="item.nameJP">
+                            <input v-if="editing==index || editAll=='all'" type="text" v-model="item.nameJP">
                             <label v-else v-text="item.nameJP"></label>
                         </td>
                         <td>
-                            <input v-if="editing==index || editAll==true" type="text" v-model="item.desc">
+                            <input v-if="editing==index || editAll=='all'" type="text" v-model="item.desc">
                             <label v-else v-text="item.desc"></label>
                         </td>
-                        <td>
-                            <input v-if="editing==index || editAll==true" type="number" min="1" v-model="item.hour">
+                        <td class="td-num">
+                            <input v-if="editing==index || editAll=='all'" type="number" min="1" v-model="item.hour">
                             <label v-else v-text="item.hour"></label>
                         </td>
-                        <td>
-                            <input v-if="editing==index || editAll==true" type="number" min="0" v-model="item.price">
+                        <td class="td-num">
+                            <input v-if="editing==index || editAll=='all'" type="number" min="0" v-model="item.price">
                             <label v-else v-text="item.price"></label>
                         </td>
                         <td>
-                            <input v-if="editing==index || editAll==true" type="text" v-model="item.prop1">
+                            <input v-if="editing==index || editAll=='all'" type="text" v-model="item.prop1"
+                                placeholder="--">
                             <label v-else>{{ (item.prop1=="")? "--" : item.prop1 }}</label>
                         </td>
                         <td>
-                            <input v-if="editing==index || editAll==true" type="text" v-model="item.prop2">
+                            <input v-if="editing==index || editAll=='all'" type="text" v-model="item.prop2"
+                                placeholder="--">
                             <label v-else>{{ (item.prop2=="")? "--" : item.prop2 }}</label>
                         </td>
-                        <td>
-                            <select v-if="editing==index || editAll==true" v-model="item.pop">
+                        <td :data-order="item.popX">
+                            <select v-if="editing==index || editAll=='all' || editAll=='pop'" v-model="item.pop">
                                 <option v-for="pop in popData" :value="pop.value" v-text="pop.text"></option>
                             </select>
                             <label v-else v-text="item.pop"></label>
                         </td>
                         <td :data-order="item.needX">
-                            <select v-if="editing==index || editAll==true" v-model="item.need">
+                            <select v-if="editing==index || editAll=='all' || editAll=='need'" v-model="item.need">
                                 <option v-for="need in needData" :value="need.value" v-text="need.text"></option>
                             </select>
                             <label v-else v-text="item.need"></label>
                         </td>
                         <td>
                             <label>x{{item.popX}} x{{item.needX}}</label>
-                            <!-- x<label v-text="item.popX"></label>
-                            x<label v-text="item.needX"></label> -->
                         </td>
-                        <td>
+                        <td class="td-num">
+                            <input v-if="editing==index || editAll=='all'" type="number" min="0" v-model="item.cost">
+                            <label v-else v-text="item.cost"></label>
+                        </td>
+                        <td class="td-num">
                             <label v-text="item.priceX"></label>
                         </td>
-                        <td>
-                            <input type="checkbox" v-model="item.mark" @change="saveChange">
+                        <td class="td-num">
+                            <label v-text="item.efficiency"></label>
                         </td>
                         <td>
-                            <button v-if="editing == index" type="button" class="btn btn-sm btn-dark"
+                            <input type="checkbox" v-model="item.enabled" @change="saveChange" tabindex="-1">
+                        </td>
+                        <td>
+                            <input type="checkbox" v-model="item.mark" @change="saveChange" tabindex="-1">
+                        </td>
+                        <td>
+                            <button v-if="editing == index" type="button" class="btn btn-sm btn-dark" tabindex="-1"
                                 :disabled="editAll ? '' : disabled" v-on:click="onEdit(index)">關閉</button>
-                            <button v-else type="button" class="btn btn-sm btn-outline-dark"
+                            <button v-else type="button" class="btn btn-sm btn-outline-dark" tabindex="-1"
                                 :disabled="editAll ? '' : disabled" v-on:click="onEdit(index)">編輯</button>
                         </td>
                     </tr>
@@ -117,10 +168,9 @@
         </div>
     </div>
 </div>
-
+<script type="text/javascript" src="./page.js"></script>
 <script>
     $(document).ready(function () {
-        $("#tbProds").dataTable({ paging: false });
     })
     Vue.createApp({
         data() {
@@ -128,6 +178,11 @@
                 appTitle: "島產品詳細資料",
                 editing: null,
                 editAll: false,
+                hour_Q: "[]",
+                prop1_Q: "[]",
+                prop2_Q: "[]",
+                pop_Q: "[]",
+                need_Q: "[]",
                 popData: [
                     { value: '大人氣', text: '1-大人氣', times: 1.4 },
                     { value: '人氣', text: '2-人氣', times: 1.2 },
@@ -141,62 +196,13 @@
                     { value: '供給過多', text: '3-供給過多', times: 0.8 },
                     { value: '超供給過多', text: '4-超供給過多', times: 0.6 },
                 ],
-                rawProds: [
-                    { "id": "1", "nameJP": "アイルポーション", "desc": "藍藥水", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "2", "nameJP": "開拓工房の火薬", "desc": "火藥", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                    { "id": "3", "nameJP": "アイルウッドチェア", "desc": "木椅", "hour": 6, "price": 42, "prop1": "調度品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                    { "id": "4", "nameJP": "開拓工房の焼き貝", "desc": "烤扇貝", "hour": 4, "price": 28, "prop1": "料理", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "5", "nameJP": "アイルウッドネックレス", "desc": "木項鍊", "hour": 4, "price": 28, "prop1": "飾品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                    { "id": "6", "nameJP": "アイルコーラルリング", "desc": "珊瑚戒指", "hour": 6, "price": 42, "prop1": "飾品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "7", "nameJP": "アイルバルビュート", "desc": "頭盔", "hour": 6, "price": 42, "prop1": "防具", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                    { "id": "8", "nameJP": "アイルマクアフティル", "desc": "木劍", "hour": 6, "price": 42, "prop1": "武器", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                    { "id": "9", "nameJP": "開拓工房のザワークラフト", "desc": "酸菜", "hour": 4, "price": 40, "prop1": "保存食", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "10", "nameJP": "開拓工房の焼きパンプキン", "desc": "烤南瓜", "hour": 4, "price": 40, "prop1": "料理", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "11", "nameJP": "アイルチュニック", "desc": "束腰衣", "hour": 6, "price": 72, "prop1": "防具", "prop2": "布製品", "pop": "普通", "need": "普通", },
-                    { "id": "12", "nameJP": "アイルクリナリーナイフ", "desc": "烹飪刀", "hour": 4, "price": 44, "prop1": "日用品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "13", "nameJP": "アイルブラシ", "desc": "刷子", "hour": 4, "price": 44, "prop1": "日用品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                    { "id": "14", "nameJP": "開拓工房のボイルドエッグ", "desc": "白煮蛋", "hour": 4, "price": 44, "prop1": "料理", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "15", "nameJP": "アイルホラ", "desc": "拳套", "hour": 6, "price": 72, "prop1": "武器", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "16", "nameJP": "アイルファングイヤリング", "desc": "耳飾", "hour": 4, "price": 44, "prop1": "飾品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "17", "nameJP": "開拓工房のバター", "desc": "牛油", "hour": 4, "price": 44, "prop1": "調味料", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "18", "nameJP": "アイルブリックカウンター", "desc": "磚台", "hour": 6, "price": 48, "prop1": "調度品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                    { "id": "19", "nameJP": "シープのブロンズ像", "desc": "羊銅像", "hour": 8, "price": 64, "prop1": "調度品", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                    { "id": "20", "nameJP": "開拓工房のグロースフォーミュラ", "desc": "生長劑", "hour": 8, "price": 136, "prop1": "藥品", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "21", "nameJP": "アイルガーネットレイピア", "desc": "刺劍", "hour": 8, "price": 136, "prop1": "武器", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                    { "id": "22", "nameJP": "アイルスプルースシールド", "desc": "雲杉盾", "hour": 8, "price": 136, "prop1": "防具", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                    { "id": "23", "nameJP": "開拓工房のシャークオイル", "desc": "鯊魚油", "hour": 8, "price": 136, "prop1": "日用品", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "24", "nameJP": "アイルシルバーイヤーカフ", "desc": "銀耳夾", "hour": 8, "price": 136, "prop1": "飾品", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                    { "id": "25", "nameJP": "開拓工房のスイートポポト", "desc": "甜薯", "hour": 6, "price": 72, "prop1": "菓子", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "26", "nameJP": "開拓工房のパースニップサラダ", "desc": "沙拉", "hour": 4, "price": 48, "prop1": "料理", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "27", "nameJP": "開拓工房のキャラメル", "desc": "牛奶糖", "hour": 6, "price": 81, "prop1": "菓子", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "28", "nameJP": "アイルリボン", "desc": "緞帶", "hour": 6, "price": 54, "prop1": "飾品", "prop2": "布製品", "pop": "普通", "need": "普通", },
-                    { "id": "29", "nameJP": "アイルロープ", "desc": "繩索", "hour": 4, "price": 36, "prop1": "日用品", "prop2": "布製品", "pop": "普通", "need": "普通", },
-                    { "id": "30", "nameJP": "アイルキャバリエハット", "desc": "帽子", "hour": 6, "price": 81, "prop1": "防具", "prop2": "布製品", "pop": "普通", "need": "普通", },
-                    { "id": "31", "nameJP": "アイルホルン", "desc": "號角", "hour": 6, "price": 81, "prop1": "日用品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "32", "nameJP": "アイルソルトコッド", "desc": "魚乾", "hour": 6, "price": 54, "prop1": "保存食", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "33", "nameJP": "アイルインクペースト", "desc": "墨魚膏", "hour": 4, "price": 36, "prop1": "調味料", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "34", "nameJP": "開拓工房の仙薬", "desc": "仙藥", "hour": 6, "price": 54, "prop1": "藥品", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "35", "nameJP": "アイルベリージャム", "desc": "莓果醬", "hour": 6, "price": 78, "prop1": "調味料", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "36", "nameJP": "トマトケチャップ", "desc": "番茄醬", "hour": 4, "price": 52, "prop1": "調味料", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "37", "nameJP": "開拓工房のオニオンスープ", "desc": "洋蔥湯", "hour": 6, "price": 78, "prop1": "料理", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "38", "nameJP": "開拓工房のフィッシュパイ", "desc": "魚肉派", "hour": 6, "price": 78, "prop1": "菓子", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                    { "id": "39", "nameJP": "開拓工房のコーンフレーク", "desc": "玉米片", "hour": 4, "price": 52, "prop1": "保存食", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "40", "nameJP": "開拓工房のラディッシュピクルス", "desc": "醃蘿蔔", "hour": 8, "price": 104, "prop1": "保存食", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "41", "nameJP": "アイルアイアンアクス", "desc": "鐵斧", "hour": 8, "price": 72, "prop1": "武器", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                    { "id": "42", "nameJP": "アイルクォーツリング", "desc": "石英戒指", "hour": 8, "price": 72, "prop1": "飾品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                    { "id": "43", "nameJP": "開拓工房の磁器壺", "desc": "瓷壺", "hour": 8, "price": 72, "prop1": "日用品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                    { "id": "44", "nameJP": "開拓工房の野菜ジュース", "desc": "野菜汁", "hour": 6, "price": 78, "prop1": "藥品", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "45", "nameJP": "開拓工房のパンプキンプディング", "desc": "南瓜布丁", "hour": 6, "price": 78, "prop1": "菓子", "prop2": "", "pop": "普通", "need": "普通", },
-                    { "id": "46", "nameJP": "アイルシープラグ", "desc": "羊地毯", "hour": 6, "price": 90, "prop1": "調度品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "47", "nameJP": "アイルガーデンサイズ", "desc": "鐮刀", "hour": 6, "price": 90, "prop1": "日用品", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                    { "id": "48", "nameJP": "アイルベッド", "desc": "床", "hour": 8, "price": 120, "prop1": "調度品", "prop2": "布製品", "pop": "普通", "need": "普通", },
-                    { "id": "49", "nameJP": "アイルスケイルフィンガー", "desc": "手甲", "hour": 8, "price": 120, "prop1": "防具", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                    { "id": "50", "nameJP": "アイルクルーク", "desc": "幻杖", "hour": 8, "price": 120, "prop1": "武器", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                ]
+                rawProds: []
             }
         },
         async created() {
-            console.log(localStorage.myRawProds);
+            //載入產品資料
+            // console.log('localStorage.myRawProds:');
+            // console.log(localStorage.myRawProds);
             if (localStorage.myRawProds) {
                 let myRawProds = JSON.parse(localStorage.myRawProds);
                 if (myRawProds.length > 0)
@@ -204,34 +210,84 @@
             }
             else {
                 localStorage.myRawProds = JSON.stringify(this.rawProds);
+                alert("載入失敗!");
             }
+        },
+        async mounted() {
+            //建立dataTable
+            $("#tbProds").dataTable({ paging: false });
+
+            //建立多選物件
+            $(".select2").select2({ placeholder: "請選擇..." })
+                //綁定事件：將多選的結果寫入隱藏的input欄位
+                .on('input', function () {
+                    $("#" + $(this).attr("id") + "_value").val(JSON.stringify($(this).val()))[0].dispatchEvent(new CustomEvent('input'));
+                });
         },
         computed: {
             rows() {
                 return this.rawProds.length
             },
+            uniHour() {
+                $("#hour_Q").val('').change().select2({ placeholder: "請選擇..." });
+                return [...new Set(this.rawProds.map(m => m.hour))].filter(m => m != '');
+            },
+            uniProp1() {
+                $("#prop1_Q").val('').change().select2({ placeholder: "請選擇..." });
+                return [...new Set(this.rawProds.map(m => m.prop1))].filter(m => m != '');
+            },
+            uniProp2() {
+                $("#prop2_Q").val('').change().select2({ placeholder: "請選擇..." });
+                return [...new Set(this.rawProds.map(m => m.prop2))].filter(m => m != '');
+            },
             compProds() {
-                return this.rawProds.map((ele, idx) => {
-                    ele.popX = (ele.pop) ? this.popData.find(m => m.value === ele.pop).times : 1;
-                    ele.needX = (ele.need) ? this.needData.find(m => m.value === ele.need).times : 1;
-                    ele.priceX = Math.floor(ele.price * ele.popX * ele.needX * 100) / 100;
-                    return ele;
-                });
+                console.log('computed compProds');
+                return this.rawProds
+                    //篩選
+                    .filter(m =>
+                        (JSON.parse(this.hour_Q).length == 0 || (JSON.parse(this.hour_Q)).includes("" + m.hour))
+                        && (JSON.parse(this.prop1_Q).length == 0 || (JSON.parse(this.prop1_Q)).includes("" + m.prop1))
+                        && (JSON.parse(this.prop2_Q).length == 0 || (JSON.parse(this.prop2_Q)).includes("" + m.prop2))
+                        && (JSON.parse(this.pop_Q).length == 0 || (JSON.parse(this.pop_Q)).includes("" + m.pop))
+                        && (JSON.parse(this.need_Q).length == 0 || (JSON.parse(this.need_Q)).includes("" + m.need))
+                    )
+                    //計算
+                    .map((ele, idx) => {
+                        ele.popX = (ele.pop) ? this.popData.find(m => m.value === ele.pop).times : 1;
+                        ele.needX = (ele.need) ? this.needData.find(m => m.value === ele.need).times : 1;
+                        let rawPriceX = (ele.price * ele.popX * ele.needX) - (ele.cost || 0);
+                        console.log(rawPriceX);
+                        ele.priceX = this.toFloat2(rawPriceX);
+                        ele.efficiency = this.toFloat2(rawPriceX / ele.hour);
+                        return ele;
+                    });
+            }
+        },
+        watch: {
+            rawProds: {
+                handler(data) {
+                    console.log('watch rawProds');
+                    localStorage.myRawProds = JSON.stringify(this.rawProds);
+                    setTimeout(() => {
+                        $("#tbProds").DataTable().rows().invalidate();
+                    }, 800)
+                },
+                deep: true,
+            },
+            hour_Q() {
+                console.log(this.hour_Q);
             }
         },
         methods: {
+            toFloat2(x) {
+                return Number.parseFloat(x).toFixed(2);
+            },
             onEdit(idx) {
                 this.editing = (this.editing !== idx) ? idx : null;
-                this.saveChange();
             },
-            onEditAll(idx) {
+            onEditAll(type) {
                 this.editing = null;
-                this.editAll = !this.editAll;
-                this.saveChange();
-            },
-            saveChange() {
-                $("#tbProds").DataTable().rows().invalidate();
-                localStorage.myRawProds = JSON.stringify(this.rawProds);
+                this.editAll = type;
             },
             resetRawProds() {
                 if (window.confirm("確定要重置島產品資料?")) {
@@ -239,15 +295,19 @@
                     window.location.reload();
                 }
             },
-            addRow: function (event) {
-                var newRow = { "id": this.rows + 1, "price": 0 }
-                this.rawProds.push(newRow);
-                this.editing = this.rows - 1;
-                //         id: this.rows + 1,
-                //         nameJP: "請輸入"
-                //     };
-                //     this.rawProds.push(newRow);
+            myChange(e) {
+                console.log(e);
             },
+
+            // addRow: function (event) {
+            //     var newRow = { "id": this.rows + 1, "price": 0 }
+            //     this.rawProds.push(newRow);
+            //     this.editing = this.rows - 1;
+            //     //         id: this.rows + 1,
+            //     //         nameJP: "請輸入"
+            //     //     };
+            //     //     this.rawProds.push(newRow);
+            // },
         }
     }).mount('#appProds');
 </script>
