@@ -201,8 +201,6 @@
         },
         async created() {
             //載入產品資料
-            // console.log('localStorage.myRawProds:');
-            // console.log(localStorage.myRawProds);
             if (localStorage.myRawProds) {
                 let myRawProds = JSON.parse(localStorage.myRawProds);
                 if (myRawProds.length > 0)
@@ -256,7 +254,6 @@
                         ele.popX = (ele.pop) ? this.popData.find(m => m.value === ele.pop).times : 1;
                         ele.needX = (ele.need) ? this.needData.find(m => m.value === ele.need).times : 1;
                         let rawPriceX = (ele.price * ele.popX * ele.needX) - (ele.cost || 0);
-                        console.log(rawPriceX);
                         ele.priceX = this.toFloat2(rawPriceX);
                         ele.efficiency = this.toFloat2(rawPriceX / ele.hour);
                         return ele;
@@ -274,9 +271,6 @@
                 },
                 deep: true,
             },
-            hour_Q() {
-                console.log(this.hour_Q);
-            }
         },
         methods: {
             toFloat2(x) {
@@ -294,9 +288,6 @@
                     localStorage.myRawProds = "";
                     window.location.reload();
                 }
-            },
-            myChange(e) {
-                console.log(e);
             },
 
             // addRow: function (event) {

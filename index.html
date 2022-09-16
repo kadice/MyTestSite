@@ -64,16 +64,14 @@
 
         //如果網址有導向參數，則將參數存入localStorage後，重新導向index
         let urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('to')) {
-            console.log(urlParams.get('to'));
+        if (urlParams.has('to') && (urlParams.get('to') != "#")) {
             localStorage.lastLoad = urlParams.get('to');
-            console.log(localStorage.lastLoad);
             
-            //location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
+            location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
         }
 
         //載入子頁面
-        //loadPage(localStorage.lastLoad);
+        loadPage(localStorage.lastLoad);
     })
 
     function init() {
