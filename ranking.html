@@ -164,7 +164,7 @@
                 //第一層
                 let rankingData = myRawProds.map((m) => ({ queue: [m], totalHours: m.hour, totalPriceX: 0.0 + Number.parseFloat(m.priceX) }));
                 //抓第二～六層
-                for (let i = 0; i < 0; i++) {
+                for (let i = 0; i < 5; i++) {
                     rankingData = rankingData.flatMap(ori => {
                         let last = ori.queue[ori.queue.length - 1];
                         let replacement = myRawProds
