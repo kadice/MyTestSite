@@ -62,15 +62,18 @@
         //初始化網站資料
         init();
 
-        //如果網址有導向參數則重新導向
+        //如果網址有導向參數，則將參數存入localStorage後，重新導向index
         let urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('to')) {
+            console.log(urlParams.get('to'));
             localStorage.lastLoad = urlParams.get('to');
-            location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
+            console.log(localStorage.lastLoad);
+            
+            //location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
         }
 
         //載入子頁面
-        loadPage(localStorage.lastLoad);
+        //loadPage(localStorage.lastLoad);
     })
 
     function init() {
