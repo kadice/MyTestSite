@@ -56,12 +56,12 @@
 
             <div style="position: relative; padding: 5px 0px;">
                 <div style="position: absolute; z-index:999;">
-                    <!-- <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="editAll ? '' : disabled"
+                    <!-- <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="(editAll=='')? null : ''"
                         v-on:click="addRow">新增島產品</button> -->
-                    <button type="button" class="btn btn btn-outline-secondary" :disabled="editAll ? '' : disabled"
+                    <button type="button" class="btn btn btn-outline-secondary" :disabled="(editAll=='')? null : ''"
                         v-on:click="resetRawProds">重置所有資料</button>
-                        <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
-                            v-on:click="onEditAll('all')">編輯全部</button>
+                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                        v-on:click="onEditAll('all')">編輯全部</button>
                     <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
                         v-on:click="onEditAll('pop')">編輯人氣度</button>
                     <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
@@ -90,7 +90,7 @@
                         <th style="max-width: 50px">時價/h</th>
                         <th style="max-width: 35px">啟用</th>
                         <th style="max-width: 35px">關注</th>
-                        <th style="width: 40px"></th>
+                        <th style="width: 40px" class="no-sort"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -151,16 +151,16 @@
                             <label v-text="item.efficiency"></label>
                         </td>
                         <td>
-                            <input type="checkbox" v-model="item.enabled" @change="saveChange" tabindex="-1">
+                            <input type="checkbox" v-model="item.enabled" tabindex="-1">
                         </td>
                         <td>
-                            <input type="checkbox" v-model="item.mark" @change="saveChange" tabindex="-1">
+                            <input type="checkbox" v-model="item.mark" tabindex="-1">
                         </td>
                         <td>
                             <button v-if="editing == index" type="button" class="btn btn-sm btn-dark" tabindex="-1"
-                                :disabled="editAll ? '' : disabled" v-on:click="onEdit(index)">關閉</button>
+                                :disabled="(editAll=='')? null : ''" v-on:click="onEdit(index)">關閉</button>
                             <button v-else type="button" class="btn btn-sm btn-outline-dark" tabindex="-1"
-                                :disabled="editAll ? '' : disabled" v-on:click="onEdit(index)">編輯</button>
+                                :disabled="(editAll=='')? null:''" v-on:click="onEdit(index)">編輯</button>
                         </td>
                     </tr>
                 </tbody>
@@ -177,7 +177,7 @@
             return {
                 appTitle: "島產品詳細資料",
                 editing: null,
-                editAll: false,
+                editAll: "",
                 hour_Q: "[]",
                 prop1_Q: "[]",
                 prop2_Q: "[]",
@@ -200,6 +200,7 @@
             }
         },
         async created() {
+            console.log('created');
             //載入產品資料
             if (localStorage.myRawProds) {
                 let myRawProds = JSON.parse(localStorage.myRawProds);
@@ -212,8 +213,7 @@
             }
         },
         async mounted() {
-            //建立dataTable
-            $("#tbProds").dataTable({ paging: false });
+            console.log('mounted');
 
             //建立多選物件
             $(".select2").select2({ placeholder: "請選擇..." })
@@ -221,35 +221,59 @@
                 .on('input', function () {
                     $("#" + $(this).attr("id") + "_value").val(JSON.stringify($(this).val()))[0].dispatchEvent(new CustomEvent('input'));
                 });
+
+            //建立dataTable
+            this.$nextTick(() => {
+                $("#tbProds").dataTable({
+                    "paging": false,
+                    "columnDefs": [
+                        { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
+                    ]
+                });
+
+            });
         },
         computed: {
             rows() {
+                console.log('computed rows');
                 return this.rawProds.length
             },
             uniHour() {
+                console.log('computed uniHour');
                 $("#hour_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.hour))].filter(m => m != '');
             },
             uniProp1() {
+                console.log('computed uniProp1');
                 $("#prop1_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.prop1))].filter(m => m != '');
             },
             uniProp2() {
+                console.log('computed uniProp2');
                 $("#prop2_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.prop2))].filter(m => m != '');
             },
             compProds() {
                 console.log('computed compProds');
-                return this.rawProds
-                    //篩選
-                    .filter(m =>
-                        (JSON.parse(this.hour_Q).length == 0 || (JSON.parse(this.hour_Q)).includes("" + m.hour))
-                        && (JSON.parse(this.prop1_Q).length == 0 || (JSON.parse(this.prop1_Q)).includes("" + m.prop1))
-                        && (JSON.parse(this.prop2_Q).length == 0 || (JSON.parse(this.prop2_Q)).includes("" + m.prop2))
-                        && (JSON.parse(this.pop_Q).length == 0 || (JSON.parse(this.pop_Q)).includes("" + m.pop))
-                        && (JSON.parse(this.need_Q).length == 0 || (JSON.parse(this.need_Q)).includes("" + m.need))
-                    )
-                    //計算
+                let compProds = this.rawProds;
+                //篩選
+                if (JSON.parse(this.hour_Q).length > 0) {
+                    compProds = compProds.filter(m => JSON.parse(this.hour_Q).includes("" + m.hour));
+                }
+                if (JSON.parse(this.prop1_Q).length > 0) {
+                    compProds = compProds.filter(m => JSON.parse(this.prop1_Q).includes("" + m.prop1));
+                }
+                if (JSON.parse(this.prop2_Q).length > 0) {
+                    compProds = compProds.filter(m => JSON.parse(this.prop2_Q).includes("" + m.prop2));
+                }
+                if (JSON.parse(this.pop_Q).length > 0) {
+                    compProds = compProds.filter(m => JSON.parse(this.pop_Q).includes("" + m.pop));
+                }
+                if (JSON.parse(this.need_Q).length > 0) {
+                    compProds = compProds.filter(m => JSON.parse(this.need_Q).includes("" + m.need));
+                }
+                //計算
+                compProds = compProds
                     .map((ele, idx) => {
                         ele.popX = (ele.pop) ? this.popData.find(m => m.value === ele.pop).times : 1;
                         ele.needX = (ele.need) ? this.needData.find(m => m.value === ele.need).times : 1;
@@ -258,6 +282,10 @@
                         ele.efficiency = this.toFloat2(rawPriceX / ele.hour);
                         return ele;
                     });
+                //依編號排序
+                compProds = compProds.sort();
+                console.log(compProds);
+                return compProds;
             }
         },
         watch: {
@@ -266,7 +294,7 @@
                     console.log('watch rawProds');
                     localStorage.myRawProds = JSON.stringify(this.rawProds);
                     setTimeout(() => {
-                        $("#tbProds").DataTable().rows().invalidate();
+                        $("#tbProds").dataTable().rows().invalidate();
                     }, 800)
                 },
                 deep: true,
@@ -277,13 +305,16 @@
                 return Number.parseFloat(x).toFixed(2);
             },
             onEdit(idx) {
+                console.log('methods onEdit');
                 this.editing = (this.editing !== idx) ? idx : null;
             },
             onEditAll(type) {
+                console.log('methods onEditAll');
                 this.editing = null;
                 this.editAll = type;
             },
             resetRawProds() {
+                console.log('methods resetRawProds');
                 if (window.confirm("確定要重置島產品資料?")) {
                     localStorage.myRawProds = "";
                     window.location.reload();

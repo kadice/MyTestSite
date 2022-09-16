@@ -7,8 +7,7 @@
             <div>
                 <div style="display: flex;">
                     <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify" style="width: 300px"
-                        :disabled="(gotIt > 3)? '' : disabled" v-on:click="getRawRanking">{{ btnText }}</button>
-
+                        :disabled="(gotIt > 5)? '' : null" v-on:click="beforeGetRawRanking">{{ btnText }}</button>
                 </div>
             </div>
             <br>
@@ -17,7 +16,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-2 col-xl-1"><label>總價Top</label></div>
+                        <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
                         <div class="col-lg-2 col-xl-1">
                             <input type="number" v-model="top_Q" class="form-control">
                         </div>
@@ -136,7 +135,7 @@
                     //排除指定產品
                     if (JSON.parse(this.exProd_Q).length > 0) {
                         let arr = JSON.parse(this.exProd_Q);
-                        compRanking = compRanking.filter(m => 
+                        compRanking = compRanking.filter(m =>
                             m.queue.filter(m1 => {
                                 return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
                             }).length == 0
@@ -148,14 +147,29 @@
                 return compRanking;
             },
             btnText() {
-                return (this.gotIt >= 3) ? "一直按是想幹嘛啦" : "按下我獲得解脫";
+                return (this.gotIt <= 1) ? "按下我獲得解脫" :
+                    (this.gotIt == 2) ? "你已經獲得解脫" :
+                        (this.gotIt >= 2 && this.gotIt <= 5) ? "你可以不用再按了" : "一直按是想幹嘛啦";
             }
         },
         methods: {
             toFloat2(x) {
                 return Number.parseFloat(x).toFixed(2);
             },
+            beforeGetRawRanking() {
+                console.log("beforeGetRawRanking start");
+                if (this.gotIt == 0) {
+                    this.gotIt = 1;
+                    this.$nextTick(() => {
+                        this.getRawRanking();
+                    });
+                }
+                else if (this.gotIt > 1)
+                    this.gotIt++;
+                console.log("beforeGetRawRanking end");
+            },
             getRawRanking() {
+                console.log("getRawRanking start");
                 let myRawProds = JSON.parse(localStorage.myRawProds);
 
                 //移除非啟用(無法生產)的產品
@@ -204,7 +218,6 @@
                 this.rawRanking = rankingData;
 
                 //繪製...?
-                this.gotIt += 1;
                 if (this.gotIt <= 1) {
                     this.$nextTick(() => {
                         //setTimeout(() => {
@@ -223,6 +236,7 @@
 
                     });
                 }
+                this.gotIt = 2; //2=搞定惹
             }
         }
     }).mount('#appRanking');
