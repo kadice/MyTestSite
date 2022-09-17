@@ -111,7 +111,7 @@
                             <label>{{prod.desc}}</label><br />
                             <small> | {{prod.prop1}} | {{prod.prop2.replace('製品','') || '--'}} |
                                 {{prod.hour}}h</small><br />
-                            <small> | {{prod.pop}} | {{prod.need}} | {{toFloat2(prod.priceX)}}</small>
+                            <small> | {{prod.pop}} | {{prod.need}} | {{this.toFloat2(prod.priceX)}}</small>
                         </td>
                         <td v-for="i in (6-item.queue.length)">
                             <label>--</label>
