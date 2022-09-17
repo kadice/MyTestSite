@@ -293,6 +293,14 @@
                 },
                 deep: true,
             },
+            compProds(newData, oldData) {
+                console.log('watch compProds');
+                //如果正在編輯，就維持oldData的排序
+                if (this.editAll != '' || this.editing != null) {
+                    let oldOrder = oldData.map(m => m.id);
+                    newData = newData.sort((a, b) => oldOrder.indexOf(a.id) - oldOrder.indexOf(b.id));
+                }
+            }
         },
         methods: {
             setSortParam(orderCol) {
