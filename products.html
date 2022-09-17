@@ -55,48 +55,49 @@
 
 
             <div style="position: relative; padding: 5px 0px;">
-                <div style="position: absolute; z-index:999;">
-                    <!-- <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="(editAll=='')? null : ''"
+                <!-- <div style="position: absolute; z-index:999;"> -->
+                <!-- <button type="button" class="btn btn-sm btn-outline-secondary" :disabled="(editAll=='')? null : ''"
                         v-on:click="addRow">新增島產品</button> -->
-                    <button type="button" class="btn btn btn-outline-secondary" :disabled="(editAll=='')? null : ''"
-                        v-on:click="resetRawProds">重置所有資料</button>
-                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
-                        v-on:click="onEditAll('all')">編輯全部</button>
-                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
-                        v-on:click="onEditAll('pop')">編輯人氣度</button>
-                    <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
-                        v-on:click="onEditAll('need')">編輯需要</button>
-                    <button type="button" class="btn btn btn-primary" v-if="editAll!=''"
-                        v-on:click="onEditAll('')">結束編輯</button>
-                </div>
+                <button type="button" class="btn btn btn-outline-secondary" :disabled="(editAll=='')? null : ''"
+                    v-on:click="resetRawProds">重置所有資料</button>
+                <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                    v-on:click="onEditAll('all')">編輯全部</button>
+                <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                    v-on:click="onEditAll('pop')">編輯人氣度</button>
+                <button type="button" class="btn btn btn-outline-primary" v-if="editAll==''"
+                    v-on:click="onEditAll('need')">編輯需要</button>
+                <button type="button" class="btn btn btn-primary" v-if="editAll!=''"
+                    v-on:click="onEditAll('')">結束編輯</button>
+                <!-- </div> -->
             </div>
 
 
-            <table id="tbProds" class="display compact">
+            <table id="tbProds" class="table">
+                <!--display compact-->
                 <thead>
                     <tr>
-                        <th style="max-width: 30px">No.</th>
-                        <th>島產品</th>
-                        <th>描述</th>
-                        <th>耗時</th>
-                        <th>基本價</th>
-                        <th>特性1</th>
-                        <th>特性2</th>
-                        <th>人氣度</th>
-                        <th>需要</th>
+                        <th @click="setSortParam('id')" style="max-width: 30px">No.</th>
+                        <th @click="setSortParam('nameJP')">島產品</th>
+                        <th @click="setSortParam('desc')">描述</th>
+                        <th @click="setSortParam('hour')">耗時</th>
+                        <th @click="setSortParam('price')">基本價</th>
+                        <th @click="setSortParam('prop1')">特性1</th>
+                        <th @click="setSortParam('prop2')">特性2</th>
+                        <th @click="setSortParam('popX')">人氣度</th>
+                        <th @click="setSortParam('needX')">需要</th>
                         <th>加成</th>
-                        <th>成本</th>
-                        <th>時價</th>
-                        <th>時價/h</th>
-                        <th>啟用</th>
-                        <th>關注</th>
+                        <th @click="setSortParam('cost')">成本</th>
+                        <th @click="setSortParam('priceX')">時價</th>
+                        <th @click="setSortParam('efficiency')">時價/h</th>
+                        <th @click="setSortParam('enabled')">啟用</th>
+                        <th @click="setSortParam('mark')">關注</th>
                         <th class="no-sort"></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-for="(item,index) in compProds" :style="(item.mark==true)?'color: red;':''">
                         <td>
-                            <input v-if="editAll=='all'" type="text" v-model="item.id">
+                            <input v-if="editAll=='all'" type="number" min="1" v-model="item.id">
                             <label v-else v-text="item.id"></label>
                         </td>
                         <td>
@@ -145,10 +146,10 @@
                             <label v-else v-text="item.cost"></label>
                         </td>
                         <td class="td-num">
-                            <label v-text="item.priceX"></label>
+                            <label v-text="toFloat2(item.priceX)"></label>
                         </td>
                         <td class="td-num">
-                            <label v-text="item.efficiency"></label>
+                            <label v-text="toFloat2(item.efficiency)"></label>
                         </td>
                         <td>
                             <input type="checkbox" v-model="item.enabled" tabindex="-1">
@@ -176,6 +177,8 @@
         data() {
             return {
                 appTitle: "島產品詳細資料",
+                orderby: '',
+                asc: true,
                 editing: null,
                 editAll: "",
                 hour_Q: "[]",
@@ -214,41 +217,35 @@
         },
         async mounted() {
             console.log('mounted');
-
             //建立多選物件
             $(".select2").select2({ placeholder: "請選擇..." })
                 //綁定事件：將多選的結果寫入隱藏的input欄位
                 .on('input', function () {
                     $("#" + $(this).attr("id") + "_value").val(JSON.stringify($(this).val()))[0].dispatchEvent(new CustomEvent('input'));
                 });
-
             //建立dataTable
             this.$nextTick(() => {
-                $("#tbProds").dataTable({
-                    "paging": false,
-                    "columnDefs": [
-                        { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
-                    ]
-                });
+                // $("#tbProds").dataTable({
+                //     "paging": false,
+                //     "columnDefs": [
+                //         { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
+                //     ]
+                // });
             });
         },
         computed: {
             rows() {
-                console.log('computed rows');
                 return this.rawProds.length
             },
             uniHour() {
-                console.log('computed uniHour');
                 $("#hour_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.hour))].filter(m => m != '');
             },
             uniProp1() {
-                console.log('computed uniProp1');
                 $("#prop1_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.prop1))].filter(m => m != '');
             },
             uniProp2() {
-                console.log('computed uniProp2');
                 $("#prop2_Q").val('').change().select2({ placeholder: "請選擇..." });
                 return [...new Set(this.rawProds.map(m => m.prop2))].filter(m => m != '');
             },
@@ -277,13 +274,14 @@
                         ele.popX = (ele.pop) ? this.popData.find(m => m.value === ele.pop).times : 1;
                         ele.needX = (ele.need) ? this.needData.find(m => m.value === ele.need).times : 1;
                         let rawPriceX = (ele.price * ele.popX * ele.needX) - (ele.cost || 0);
-                        ele.priceX = this.toFloat2(rawPriceX);
-                        ele.efficiency = this.toFloat2(rawPriceX / ele.hour);
+                        ele.priceX = rawPriceX;
+                        ele.efficiency = rawPriceX / ele.hour;
                         return ele;
                     });
-                //依編號排序
-                compProds = compProds.sort();
-                console.log(compProds);
+
+                //排序
+                compProds = this.mySort(compProds);
+
                 return compProds;
             }
         },
@@ -292,22 +290,32 @@
                 handler(data) {
                     console.log('watch rawProds');
                     localStorage.myRawProds = JSON.stringify(this.rawProds);
-
                 },
                 deep: true,
             },
-            compProds() {
-                console.log('watch compProds');
-                // $('#tbProds').DataTable().destroy();
-                // $("#tbProds").dataTable({
-                //     "paging": false,
-                //     "columnDefs": [
-                //         { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
-                //     ]
-                // });
-            }
         },
         methods: {
+            setSortParam(orderCol) {
+                console.log('methods setSortParam');
+                if (this.orderby == orderCol) {
+                    this.asc = !this.asc;
+                }
+                else {
+                    this.orderby = orderCol;
+                    this.asc = true;
+                }
+            },
+            mySort(compProds) {
+                console.log('methods mySort');
+                if (this.orderby != '') {
+                    if (this.asc == true)
+                        return compProds.sort((a, b) => (b[this.orderby] <= a[this.orderby]) ? 0 : -1);
+                    else
+                        return compProds.sort((a, b) => (b[this.orderby] >= a[this.orderby]) ? 0 : -1);
+                }
+                else
+                    return compProds.sort();
+            },
             toFloat2(x) {
                 return Number.parseFloat(x).toFixed(2);
             },
@@ -327,7 +335,7 @@
                     window.location.reload();
                 }
             },
-            
+
             // addRow: function (event) {
             //     var newRow = { "id": this.rows + 1, "price": 0 }
             //     this.rawProds.push(newRow);

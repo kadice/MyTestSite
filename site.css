@@ -81,3 +81,39 @@ input[type=checkbox] {
 .card .card-body .row:last-child {
     margin-bottom: 0px;
 }
+
+/*內文不換行*/
+button,
+th {
+    white-space: nowrap;
+}
+
+small a{
+    color:teal;
+}
+
+/*====================一般table應急處理===================*/
+/*input寬度100%避免炸版*/
+table.table input[type=text] {
+    width: 100%;
+}
+table.table input[type=number] {
+    width: 100%;
+    max-width: 80px;
+}
+
+/*select寬度100%避免炸版*/
+table.table select {
+    width: 100%;
+    height: 30px;
+    min-width: 100px;
+}
+
+/*數字靠右*/
+table.table td.td-num {
+    text-align: right;
+}
+
+table.table td.td-num label {
+    padding-right: 14px;
+}

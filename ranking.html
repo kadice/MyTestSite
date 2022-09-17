@@ -2,28 +2,28 @@
     <div class="col-lg-11 col-xxl-10 mx-auto">
         <div id="appRanking">
             <h4>{{ appTitle }}</h4>
-
-
-            <div>
-
-            </div>
             <br>
 
             <div class="card">
                 <div class="card-header">
-                    <label>自動找出所有產品組合！</label>
+                    <label>自動找出所有產品組合！</label><small>友情提醒：記得先去<a href="./products.html">島產品</a>設定人氣跟需求！</small>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-3 form-inline">
+                        <div class="col-lg-2 form-inline">
                             <label>產品最多重複</label>
                             <input type="number" v-model="repeat" class="form-control" min="0" max="6"
-                                style="width: 100px"><label>次</label>
+                                style="width: 80px"><label>次</label>
                         </div>
-                        <div class="col-lg-3 form-inline">
+                        <div class="col-lg-2 form-inline">
                             <label>尋找</label>
                             <input type="number" v-model="maxHours" class="form-control" min="0" max="24"
-                                style="width: 100px"><label>小時內的組合</label>
+                                style="width: 80px"><label>小時內的組合</label>
+                        </div>
+                        <div class="col-lg-2 form-inline">
+                            <label>顯示Top</label>
+                            <input type="number" v-model="topNum" class="form-control" min="0" max="500"
+                                style="width: 80px"><label>筆</label>
                         </div>
                         <div class="col-lg-3 form-inline">
                             <div style="display:inline-block">
@@ -55,10 +55,10 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
+                        <!-- <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
                         <div class="col-lg-2 col-xl-1">
-                            <input type="number" v-model="top_Q" class="form-control">
-                        </div>
+                            <input type="number" v-model="top_Q" class="form-control" min="0" max="500">
+                        </div> -->
                         <div class="col-lg-2 col-xl-1"><label>產品數</label></div>
                         <div class="col-lg-6 col-xl-4">
                             <select id="queueLen_Q" name="queueLen_Q[]" class="select2" multiple="multiple">
@@ -139,9 +139,10 @@
                 gotIt: 0,
                 repeat: 2,
                 maxHours: 24,
+                topNum: 100,
                 onlyEnabled: true,
                 exSamePd: true,
-                top_Q: 100,
+                //top_Q: 100,
                 queueLen_Q: "[]",
                 inProd_Q: "[]",
                 exProd_Q: "[]",
@@ -204,8 +205,8 @@
                             }).length == 0
                         );
                     }
-                    //依總價排序 //取前n筆資料
-                    compRanking = compRanking.sort((a, b) => b.totalPriceX - a.totalPriceX).slice(0, this.top_Q);
+                    //依總價排序
+                    compRanking = compRanking.sort((a, b) => b.totalPriceX - a.totalPriceX);
                 }
                 return compRanking;
             },
@@ -221,19 +222,16 @@
             }
         },
         methods: {
-            toFloat2(x) {
-                return Number.parseFloat(x).toFixed(2);
-            },
             reDrawTable() {
                 this.$nextTick(async () => {
                     $('#tbRanking').DataTable().destroy();
                     await $("#tbRanking").dataTable({
                         //"paging": false,
                         "iDisplayLength": 50,
-                        "lengthMenu": [
-                            [10, 25, 50, 100, 200, 500, -1],
-                            [10, 25, 50, 100, 200, 500, 'All'],
-                        ],
+                        // "lengthMenu": [
+                        //     [10, 25, 50, 100, 200, 500, -1],
+                        //     [10, 25, 50, 100, 200, 500, 'All'],
+                        // ],
                         "columnDefs": [
                             { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
                         ]
@@ -293,6 +291,8 @@
 
                 //依總價排序
                 rankingData = rankingData.sort((a, b) => b.totalPriceX - a.totalPriceX);
+
+                rankingData = rankingData.slice(0, this.topNum);
 
                 this.rawRanking = rankingData;
 
