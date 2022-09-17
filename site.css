@@ -84,12 +84,13 @@ input[type=checkbox] {
 
 /*內文不換行*/
 button,
-th {
+th,
+td {
     white-space: nowrap;
 }
 
-small a{
-    color:teal;
+small a {
+    color: teal;
 }
 
 /*====================一般table應急處理===================*/
@@ -97,6 +98,7 @@ small a{
 table.table input[type=text] {
     width: 100%;
 }
+
 table.table input[type=number] {
     width: 100%;
     max-width: 80px;
