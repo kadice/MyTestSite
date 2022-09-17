@@ -75,22 +75,22 @@
             <table id="tbProds" class="display compact">
                 <thead>
                     <tr>
-                        <th style="max-width: 40px">編號</th>
-                        <th style="max-width: auto">島產品</th>
-                        <th style="max-width: auto">描述</th>
-                        <th style="max-width: 50px">耗時</th>
-                        <th style="max-width: 50px">基本價</th>
-                        <th style="max-width: 70px">特性1</th>
-                        <th style="max-width: 70px">特性2</th>
-                        <th style="width: 70px">人氣度</th>
-                        <th style="width: 100px">需要</th>
-                        <th style="max-width: 120px">加成</th>
-                        <th style="max-width: 120px">成本</th>
-                        <th style="max-width: 50px">時價</th>
-                        <th style="max-width: 50px">時價/h</th>
-                        <th style="max-width: 35px">啟用</th>
-                        <th style="max-width: 35px">關注</th>
-                        <th style="width: 40px" class="no-sort"></th>
+                        <th style="max-width: 30px">No.</th>
+                        <th>島產品</th>
+                        <th>描述</th>
+                        <th>耗時</th>
+                        <th>基本價</th>
+                        <th>特性1</th>
+                        <th>特性2</th>
+                        <th>人氣度</th>
+                        <th>需要</th>
+                        <th>加成</th>
+                        <th>成本</th>
+                        <th>時價</th>
+                        <th>時價/h</th>
+                        <th>啟用</th>
+                        <th>關注</th>
+                        <th class="no-sort"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -230,7 +230,6 @@
                         { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
                     ]
                 });
-
             });
         },
         computed: {
@@ -258,19 +257,19 @@
                 let compProds = this.rawProds;
                 //篩選
                 if (JSON.parse(this.hour_Q).length > 0) {
-                    compProds = compProds.filter(m => JSON.parse(this.hour_Q).includes("" + m.hour));
+                    compProds = compProds.filter(m => JSON.parse(this.hour_Q).includes(m.hour.toString()))
                 }
                 if (JSON.parse(this.prop1_Q).length > 0) {
-                    compProds = compProds.filter(m => JSON.parse(this.prop1_Q).includes("" + m.prop1));
+                    compProds = compProds.filter(m => JSON.parse(this.prop1_Q).includes(m.prop1.toString()));
                 }
                 if (JSON.parse(this.prop2_Q).length > 0) {
-                    compProds = compProds.filter(m => JSON.parse(this.prop2_Q).includes("" + m.prop2));
+                    compProds = compProds.filter(m => JSON.parse(this.prop2_Q).includes(m.prop2.toString()));
                 }
                 if (JSON.parse(this.pop_Q).length > 0) {
-                    compProds = compProds.filter(m => JSON.parse(this.pop_Q).includes("" + m.pop));
+                    compProds = compProds.filter(m => JSON.parse(this.pop_Q).includes(m.pop.toString()));
                 }
                 if (JSON.parse(this.need_Q).length > 0) {
-                    compProds = compProds.filter(m => JSON.parse(this.need_Q).includes("" + m.need));
+                    compProds = compProds.filter(m => JSON.parse(this.need_Q).includes(m.need.toString()));
                 }
                 //計算
                 compProds = compProds
@@ -293,12 +292,20 @@
                 handler(data) {
                     console.log('watch rawProds');
                     localStorage.myRawProds = JSON.stringify(this.rawProds);
-                    setTimeout(() => {
-                        $("#tbProds").dataTable().rows().invalidate();
-                    }, 800)
+
                 },
                 deep: true,
             },
+            compProds() {
+                console.log('watch compProds');
+                // $('#tbProds').DataTable().destroy();
+                // $("#tbProds").dataTable({
+                //     "paging": false,
+                //     "columnDefs": [
+                //         { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
+                //     ]
+                // });
+            }
         },
         methods: {
             toFloat2(x) {
@@ -320,7 +327,7 @@
                     window.location.reload();
                 }
             },
-
+            
             // addRow: function (event) {
             //     var newRow = { "id": this.rows + 1, "price": 0 }
             //     this.rawProds.push(newRow);

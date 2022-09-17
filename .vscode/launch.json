@@ -8,7 +8,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Open products.html",
-            "file": "d:\\MY\\VSCode\\MyTestSite\\products.html",
+            "file": "F:\\coding\\VSCODE\\MyTestSite\\MyTestSite\\index.html",
             "runtimeArgs": [
                 "--disable-web-security"
             ],

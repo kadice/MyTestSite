@@ -24,11 +24,9 @@ table.dataTable.compact thead td {
     padding-right: 20px !important;
 }
 
-/*放大checkbox並和文字對齊*/
+/*checkbox和input文字對齊*/
 table.dataTable.compact input[type=checkbox] {
-    width: 20px;
-    height: 20px;
-    margin: 5px 4px;
+    margin: 5px 0px 0px 6px;
 }
 
 /*使表格內的label和input文字對齊*/
@@ -42,8 +40,9 @@ table.dataTable.compact td label {
     width: 100%;
 }
 
-.select2-selection {
+.select2-container--default .select2-selection--multiple {
     line-height: 18px;
+    border: 1px solid #ced4da;
 }
 
 /*input配合select2高度*/
@@ -60,6 +59,25 @@ table.dataTable.compact td label {
 
 .card label {
     font-weight: bold;
-    padding: 3px;
+    padding: 3px 4px 0px 4px;
     color: darkslategray;
+}
+
+.form-inline .form-control {
+    display: inline-block;
+}
+
+/*放大checkbox*/
+input[type=checkbox] {
+    /* width: 20px;
+    height: 20px; */
+    transform: scale(1.5);
+}
+
+.card .card-body .row {
+    margin-bottom: 5px;
+}
+
+.card .card-body .row:last-child {
+    margin-bottom: 0px;
 }

@@ -5,15 +5,54 @@
 
 
             <div>
-                <div style="display: flex;">
-                    <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify" style="width: 300px"
-                        :disabled="(gotIt > 5)? '' : null" v-on:click="beforeGetRawRanking">{{ btnText }}</button>
-                </div>
+
             </div>
             <br>
 
-
             <div class="card">
+                <div class="card-header">
+                    <label>自動找出所有產品組合！</label>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 form-inline">
+                            <label>產品最多重複</label>
+                            <input type="number" v-model="repeat" class="form-control" min="0" max="6"
+                                style="width: 100px"><label>次</label>
+                        </div>
+                        <div class="col-lg-3 form-inline">
+                            <label>尋找</label>
+                            <input type="number" v-model="maxHours" class="form-control" min="0" max="24"
+                                style="width: 100px"><label>小時內的組合</label>
+                        </div>
+                        <div class="col-lg-3 form-inline">
+                            <div style="display:inline-block">
+                                <input type="checkbox" v-model="onlyEnabled">
+                            </div>
+                            <label>只使用「啟用」中的島產品</label>
+                        </div>
+                        <div class="col-lg-3 form-inline">
+                            <div style="display:inline-block">
+                                <input type="checkbox" v-model="exSamePd">
+                            </div>
+                            <label>移除順序不同的相同組合(建議)</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div style="display: flex;">
+                                <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify"
+                                    style="width: 300px" :disabled="(gotIt > 5)? '' : null"
+                                    v-on:click="getRawRanking">{{ btnText }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <label>在結果裡篩選...</label>
+                </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
@@ -21,11 +60,20 @@
                             <input type="number" v-model="top_Q" class="form-control">
                         </div>
                         <div class="col-lg-2 col-xl-1"><label>產品數</label></div>
-                        <div class="col-lg-6 col-xl-3">
+                        <div class="col-lg-6 col-xl-4">
                             <select id="queueLen_Q" name="queueLen_Q[]" class="select2" multiple="multiple">
                                 <option v-for="i in 4" :value="i+2" v-text="(i+2)+'件產品'"></option>
                             </select>
                             <input type="text" v-model="queueLen_Q" id="queueLen_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-2 col-xl-1"><label>包含產品</label></div>
+                        <div class="col-lg-10 col-xl-5">
+                            <select id="inProd_Q" name="inProd_Q[]" class="select2" multiple="multiple">
+                                <option v-for="item in prodDesc" :value="item.id" v-text="item.desc"></option>
+                            </select>
+                            <input type="text" v-model="inProd_Q" id="inProd_Q_value" style="display: none;">
                         </div>
                         <div class="col-lg-2 col-xl-1"><label>排除產品</label></div>
                         <div class="col-lg-10 col-xl-5">
@@ -34,8 +82,6 @@
                             </select>
                             <input type="text" v-model="exProd_Q" id="exProd_Q_value" style="display: none;">
                         </div>
-                    </div>
-                    <div class="row">
                     </div>
                 </div>
             </div>
@@ -47,11 +93,11 @@
                     <tr>
                         <th style="max-width: 40px">排名</th>
                         <th style="max-width: auto">島產品1</th>
-                        <th style="max-width: auto">島產品2</th>
-                        <th style="max-width: auto">島產品3</th>
-                        <th style="max-width: auto">島產品4</th>
-                        <th style="max-width: auto">島產品5</th>
-                        <th style="max-width: auto">島產品6</th>
+                        <th style="max-width: auto">島產品2<small> (兩倍)</small></th>
+                        <th style="max-width: auto">島產品3<small> (兩倍)</small></th>
+                        <th style="max-width: auto">島產品4<small> (兩倍)</small></th>
+                        <th style="max-width: auto">島產品5<small> (兩倍)</small></th>
+                        <th style="max-width: auto">島產品6<small> (兩倍)</small></th>
                         <th style="max-width: 50px">總價</th>
                         <th style="width: 80px" class="no-sort"></th>
                     </tr>
@@ -63,8 +109,9 @@
                         </td>
                         <td v-for="(prod, pIdx) in item.queue">
                             <label>{{prod.desc}}</label><br />
-                            <small> |{{prod.prop1}} |{{prod.prop2}} | {{prod.hour}}h</small><br />
-                            <small> |{{prod.pop}} |{{prod.need}} | {{prod.priceX}}</small>
+                            <small> | {{prod.prop1}} | {{prod.prop2.replace('製品','') || '--'}} |
+                                {{prod.hour}}h</small><br />
+                            <small> | {{prod.pop}} | {{prod.need}} | {{prod.priceX}}</small>
                         </td>
                         <td v-for="i in (6-item.queue.length)">
                             <label>--</label>
@@ -90,8 +137,13 @@
             return {
                 appTitle: "救救可憐光戰",
                 gotIt: 0,
+                repeat: 2,
+                maxHours: 24,
+                onlyEnabled: true,
+                exSamePd: true,
                 top_Q: 100,
                 queueLen_Q: "[]",
+                inProd_Q: "[]",
                 exProd_Q: "[]",
                 rawRanking: [],
                 prodDesc: [],
@@ -132,10 +184,21 @@
                         let arr = JSON.parse(this.queueLen_Q);
                         compRanking = compRanking.filter(m => arr.includes("" + m.queue.length));
                     }
+                    //包含指定產品
+                    if (JSON.parse(this.inProd_Q).length > 0) {
+                        let arr = JSON.parse(this.inProd_Q);
+                        compRanking = compRanking.filter(m =>
+                            //只顯示跟inProd_Q重複大於1項的排程
+                            m.queue.filter(m1 => {
+                                return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                            }).length >= 1
+                        );
+                    }
                     //排除指定產品
                     if (JSON.parse(this.exProd_Q).length > 0) {
                         let arr = JSON.parse(this.exProd_Q);
                         compRanking = compRanking.filter(m =>
+                            //只顯示跟exProd_Q重複0項的排程
                             m.queue.filter(m1 => {
                                 return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
                             }).length == 0
@@ -147,33 +210,47 @@
                 return compRanking;
             },
             btnText() {
-                return (this.gotIt <= 1) ? "按下我獲得解脫" :
-                    (this.gotIt == 2) ? "你已經獲得解脫" :
-                        (this.gotIt >= 2 && this.gotIt <= 5) ? "你可以不用再按了" : "一直按是想幹嘛啦";
+                //之後看怎麼弄文字變化:3
+                return "按下我獲得解脫";
+            }
+        },
+        watch: {
+            compRanking() {
+                console.log("watch compRanking");
+                this.reDrawTable();
             }
         },
         methods: {
             toFloat2(x) {
                 return Number.parseFloat(x).toFixed(2);
             },
-            beforeGetRawRanking() {
-                console.log("beforeGetRawRanking start");
-                if (this.gotIt == 0) {
-                    this.gotIt = 1;
-                    this.$nextTick(() => {
-                        this.getRawRanking();
+            reDrawTable() {
+                this.$nextTick(async () => {
+                    $('#tbRanking').DataTable().destroy();
+                    await $("#tbRanking").dataTable({
+                        //"paging": false,
+                        "iDisplayLength": 50,
+                        "lengthMenu": [
+                            [10, 25, 50, 100, 200, 500, -1],
+                            [10, 25, 50, 100, 200, 500, 'All'],
+                        ],
+                        "columnDefs": [
+                            { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
+                        ]
                     });
-                }
-                else if (this.gotIt > 1)
-                    this.gotIt++;
-                console.log("beforeGetRawRanking end");
+                });
             },
             getRawRanking() {
                 console.log("getRawRanking start");
                 let myRawProds = JSON.parse(localStorage.myRawProds);
 
+                if (isNaN(parseInt(this.repeat)))
+                    this.repeat = 2;
+
                 //移除非啟用(無法生產)的產品
-                myRawProds = myRawProds.filter(m => m.enabled == true);
+                if (this.onlyEnabled) {
+                    myRawProds = myRawProds.filter(m => m.enabled == true);
+                }
 
                 //第一層
                 let rankingData = myRawProds.map((m) => ({ queue: [m], totalHours: m.hour, totalPriceX: 0.0 + Number.parseFloat(m.priceX) }));
@@ -185,9 +262,9 @@
                             //找出與last特性相同且總耗時<=24的產品
                             .filter(m1 => m1.id != last.id
                                 && ((m1.prop1 != "" && m1.prop1 == last.prop1) || (m1.prop2 != "" && m1.prop2 == last.prop2))
-                                && (m1.hour + ori.totalHours <= 24))
+                                && (m1.hour + ori.totalHours <= (this.maxHours || 24)))
                             //檢查產品重複次數，已出現兩次就不放入
-                            .filter(m2 => ori.queue.filter(m3 => m3.id == m2.id).length < 2)
+                            .filter(m2 => ori.queue.filter(m3 => m3.id == m2.id).length < this.repeat)
                             //對此產品做檢查，並回傳處理結果
                             .map(m4 => {
                                 let newEle = JSON.parse(JSON.stringify(ori));
@@ -201,42 +278,26 @@
                 }
 
                 //移除只是順序不同的重複組合
-                const allSet = new Set();
-                rankingData = rankingData.filter(m => {
-                    const thisQueSet = m.queue.map(m2 => m2.id).sort();
-                    if (allSet.has(JSON.stringify(thisQueSet))) {
-                        return false;
-                    }
-                    else {
-                        return allSet.add(JSON.stringify(thisQueSet));
-                    }
-                });
+                if (this.exSamePd) {
+                    const allSet = new Set();
+                    rankingData = rankingData.filter(m => {
+                        const thisQueSet = m.queue.map(m2 => m2.id).sort();
+                        if (allSet.has(JSON.stringify(thisQueSet))) {
+                            return false;
+                        }
+                        else {
+                            return allSet.add(JSON.stringify(thisQueSet));
+                        }
+                    });
+                }
 
                 //依總價排序
                 rankingData = rankingData.sort((a, b) => b.totalPriceX - a.totalPriceX);
 
                 this.rawRanking = rankingData;
 
-                //繪製...?
-                if (this.gotIt <= 1) {
-                    this.$nextTick(() => {
-                        //setTimeout(() => {
-                        //建立dataTable
-                        $("#tbRanking").dataTable({
-                            "iDisplayLength": 50,
-                            "lengthMenu": [
-                                [10, 25, 50, 100, 200, 500, -1],
-                                [10, 25, 50, 100, 200, 500, 'All'],
-                            ],
-                            "columnDefs": [
-                                { targets: 'no-sort', orderable: false } /*class設為no-sort可關閉排序功能*/
-                            ]
-                        });
-                        //}, 800);
-
-                    });
-                }
-                this.gotIt = 2; //2=搞定惹
+                alert("已完成計算!");
+                this.reDrawTable();
             }
         }
     }).mount('#appRanking');
