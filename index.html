@@ -38,7 +38,7 @@
     </nav>
 
     <div id="pageContent" class="container-fluid"></div>
-    
+
 </body>
 
 <!-- jQuery Core -->
@@ -62,21 +62,18 @@
         //初始化網站資料
         init();
 
-
-        //https://kadice.github.io/MyTestSite/?to=products.html
         //如果網址有導向參數，則將參數存入localStorage後，重新導向index
         let urlParams = new URLSearchParams(window.location.search);
-        console.log(urlParams.has('to'));
-        console.log(urlParams.get('to'));
+        console.log('to = ' + urlParams.get('to'));
         if (urlParams.has('to') && (urlParams.get('to') != "#")) {
             localStorage.lastLoad = urlParams.get('to');
-            
-        console.log('GOTO '+localStorage.lastLoad);
-            //location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
+            console.log('GOTO ' + localStorage.lastLoad);
+            location.href = './' + ((window.origin == 'file://') ? "index.html" : "");
         }
-
-        //載入子頁面
-        loadPage(localStorage.lastLoad);
+        else {
+            //載入子頁面
+            loadPage(localStorage.lastLoad);
+        }
     })
 
     function init() {
@@ -84,15 +81,15 @@
         if (localStorage.myRawProds == undefined || localStorage.myRawProds == "") {
             console.log('reset RawProds!');
             let defRawProds = [
-                { "id": 1 , "nameJP": "アイルポーション", "desc": "藍藥水", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "", "pop": "普通", "need": "普通", },
-                { "id": 2 , "nameJP": "開拓工房の火薬", "desc": "火藥", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
-                { "id": 3 , "nameJP": "アイルウッドチェア", "desc": "木椅", "hour": 6, "price": 42, "prop1": "調度品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                { "id": 4 , "nameJP": "開拓工房の焼き貝", "desc": "烤扇貝", "hour": 4, "price": 28, "prop1": "料理", "prop2": "海產製品", "pop": "普通", "need": "普通", },
-                { "id": 5 , "nameJP": "アイルウッドネックレス", "desc": "木項鍊", "hour": 4, "price": 28, "prop1": "飾品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                { "id": 6 , "nameJP": "アイルコーラルリング", "desc": "珊瑚戒指", "hour": 6, "price": 42, "prop1": "飾品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
-                { "id": 7 , "nameJP": "アイルバルビュート", "desc": "頭盔", "hour": 6, "price": 42, "prop1": "防具", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
-                { "id": 8 , "nameJP": "アイルマクアフティル", "desc": "木劍", "hour": 6, "price": 42, "prop1": "武器", "prop2": "木工製品", "pop": "普通", "need": "普通", },
-                { "id": 9 , "nameJP": "開拓工房のザワークラフト", "desc": "酸菜", "hour": 4, "price": 40, "prop1": "保存食", "prop2": "", "pop": "普通", "need": "普通", },
+                { "id": 1, "nameJP": "アイルポーション", "desc": "藍藥水", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "", "pop": "普通", "need": "普通", },
+                { "id": 2, "nameJP": "開拓工房の火薬", "desc": "火藥", "hour": 4, "price": 28, "prop1": "藥品", "prop2": "窯業製品", "pop": "普通", "need": "普通", },
+                { "id": 3, "nameJP": "アイルウッドチェア", "desc": "木椅", "hour": 6, "price": 42, "prop1": "調度品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
+                { "id": 4, "nameJP": "開拓工房の焼き貝", "desc": "烤扇貝", "hour": 4, "price": 28, "prop1": "料理", "prop2": "海產製品", "pop": "普通", "need": "普通", },
+                { "id": 5, "nameJP": "アイルウッドネックレス", "desc": "木項鍊", "hour": 4, "price": 28, "prop1": "飾品", "prop2": "木工製品", "pop": "普通", "need": "普通", },
+                { "id": 6, "nameJP": "アイルコーラルリング", "desc": "珊瑚戒指", "hour": 6, "price": 42, "prop1": "飾品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
+                { "id": 7, "nameJP": "アイルバルビュート", "desc": "頭盔", "hour": 6, "price": 42, "prop1": "防具", "prop2": "金屬製品", "pop": "普通", "need": "普通", },
+                { "id": 8, "nameJP": "アイルマクアフティル", "desc": "木劍", "hour": 6, "price": 42, "prop1": "武器", "prop2": "木工製品", "pop": "普通", "need": "普通", },
+                { "id": 9, "nameJP": "開拓工房のザワークラフト", "desc": "酸菜", "hour": 4, "price": 40, "prop1": "保存食", "prop2": "", "pop": "普通", "need": "普通", },
                 { "id": 10, "nameJP": "開拓工房の焼きパンプキン", "desc": "烤南瓜", "hour": 4, "price": 40, "prop1": "料理", "prop2": "", "pop": "普通", "need": "普通", },
                 { "id": 11, "nameJP": "アイルチュニック", "desc": "束腰衣", "hour": 6, "price": 72, "prop1": "防具", "prop2": "布製品", "pop": "普通", "need": "普通", },
                 { "id": 12, "nameJP": "アイルクリナリーナイフ", "desc": "烹飪刀", "hour": 4, "price": 44, "prop1": "日用品", "prop2": "動物製品", "pop": "普通", "need": "普通", },
@@ -143,7 +140,7 @@
             });
             localStorage.myRawProds = JSON.stringify(defRawProds);
         }
-        else{
+        else {
             //修正舊版格式問題
             let defRawProds = JSON.parse(localStorage.myRawProds);
             defRawProds = defRawProds.map(m => {

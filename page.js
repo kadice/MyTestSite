@@ -3,15 +3,9 @@
     let sep = window.location.href.lastIndexOf('/');
     let base = location.href.substring(0, sep + 1);
     let page = location.href.substring(sep + 1);
-
-
-    console.log(base);
-    console.log(page);
-    //https://kadice.github.io/MyTestSite/products.html
     if ((page.indexOf('.html') > 0) && (page.indexOf('index.html') < 0)) {
         let url = base + ((window.origin == 'file://') ? "index.html" : "") + "?to=" + page;
-        
-    console.log(url);
-       // window.location.href = url;
+        console.log('page 導向url = ' + url);
+        window.location.href = url;
     }
 }
