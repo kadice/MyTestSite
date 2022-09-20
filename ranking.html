@@ -2,8 +2,9 @@
     <div class="col-lg-11 col-xxl-10 mx-auto">
         <div id="appRanking">
             <h4>{{ appTitle }}</h4>
-            <br>
-
+            <div class="alert alert-warning" role="alert">
+                info：因為篩選會出問題所以暫時拔掉篩選，全部改成搜尋條件(設定好後要再按一次按鈕)
+            </div>
             <div class="card">
                 <div class="card-header">
                     <label>自動找出所有產品組合！</label><small>友情提醒：記得先去<a href="./products.html">島產品</a>設定人氣跟需求！</small>
@@ -39,26 +40,6 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-lg-12">
-                            <div style="display: flex;">
-                                <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify"
-                                    style="width: 300px" :disabled="(gotIt > 5)? '' : null"
-                                    v-on:click="getRawRanking">{{ btnText }}</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-header">
-                    <label>在結果裡篩選...</label>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
-                        <div class="col-lg-2 col-xl-1">
-                            <input type="number" v-model="top_Q" class="form-control" min="0" max="500">
-                        </div> -->
                         <div class="col-lg-2 col-xl-1"><label>產品數</label></div>
                         <div class="col-lg-6 col-xl-4">
                             <select id="queueLen_Q" name="queueLen_Q[]" class="select2" multiple="multiple">
@@ -83,8 +64,56 @@
                             <input type="text" v-model="exProd_Q" id="exProd_Q_value" style="display: none;">
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div style="display: flex;">
+                                <button type="button" class="btn btn-lg btn-warning mx-auto btn-justify"
+                                    style="width: 300px" :disabled="(gotIt > 5)? '' : null"
+                                    v-on:click="getRawRanking">{{ btnText }}</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div id="doneAlert" class="alert alert-success">
+                已完成計算！
+            </div>
+            <!-- <div class="card">
+                <div class="card-header">
+                    <label>在結果裡篩選...</label>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <-- <div class="col-lg-2 col-xl-1"><label>列出Top</label></div>
+                        <div class="col-lg-2 col-xl-1">
+                            <input type="number" v-model="top_Q" class="form-control" min="0" max="500">
+                        </div> -->
+            <!-- <div class="col-lg-2 col-xl-1"><label>產品數</label></div>
+                        <div class="col-lg-6 col-xl-4">
+                            <select id="queueLen_Q" name="queueLen_Q[]" class="select2" multiple="multiple">
+                                <option v-for="i in 4" :value="i+2" v-text="(i+2)+'件產品'"></option>
+                            </select>
+                            <input type="text" v-model="queueLen_Q" id="queueLen_Q_value" style="display: none;">
+                        </div> -- >
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-2 col-xl-1"><label>包含產品</label></div>
+                        <div class="col-lg-10 col-xl-5">
+                            <select id="inProd_Q" name="inProd_Q[]" class="select2" multiple="multiple">
+                                <option v-for="item in prodDesc" :value="item.id" v-text="item.desc"></option>
+                            </select>
+                            <input type="text" v-model="inProd_Q" id="inProd_Q_value" style="display: none;">
+                        </div>
+                        <div class="col-lg-2 col-xl-1"><label>排除產品</label></div>
+                        <div class="col-lg-10 col-xl-5">
+                            <select id="exProd_Q" name="exProd_Q[]" class="select2" multiple="multiple">
+                                <option v-for="item in prodDesc" :value="item.id" v-text="item.desc"></option>
+                            </select>
+                            <input type="text" v-model="exProd_Q" id="exProd_Q_value" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+            </div> -->
             <br>
 
 
@@ -164,6 +193,7 @@
                 localStorage.myRawProds = JSON.stringify(this.rawProds);
                 alert("載入失敗!");
             }
+
         },
         async mounted() {
             //建立多選物件
@@ -173,41 +203,42 @@
                     $("#" + $(this).attr("id") + "_value").val(JSON.stringify($(this).val()))[0].dispatchEvent(new CustomEvent('input'));
                 });
 
+                $("#doneAlert").hide(); 
             //this.getRawRanking();
         },
         computed: {
             compRanking() {
                 console.log('computed compRanking');
                 let compRanking = this.rawRanking;
-                if (compRanking.length > 0) {
-                    //篩選產品數
-                    if (JSON.parse(this.queueLen_Q).length > 0) {
-                        let arr = JSON.parse(this.queueLen_Q);
-                        compRanking = compRanking.filter(m => arr.includes("" + m.queue.length));
-                    }
-                    //包含指定產品
-                    if (JSON.parse(this.inProd_Q).length > 0) {
-                        let arr = JSON.parse(this.inProd_Q);
-                        compRanking = compRanking.filter(m =>
-                            //只顯示跟inProd_Q重複大於1項的排程
-                            m.queue.filter(m1 => {
-                                return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
-                            }).length >= 1
-                        );
-                    }
-                    //排除指定產品
-                    if (JSON.parse(this.exProd_Q).length > 0) {
-                        let arr = JSON.parse(this.exProd_Q);
-                        compRanking = compRanking.filter(m =>
-                            //只顯示跟exProd_Q重複0項的排程
-                            m.queue.filter(m1 => {
-                                return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
-                            }).length == 0
-                        );
-                    }
-                    //依總價排序
-                    compRanking = compRanking.sort((a, b) => b.totalPriceX - a.totalPriceX);
-                }
+                // if (compRanking.length > 0) {
+                //     //篩選產品數
+                //     if (JSON.parse(this.queueLen_Q).length > 0) {
+                //         let arr = JSON.parse(this.queueLen_Q);
+                //         compRanking = compRanking.filter(m => arr.includes("" + m.queue.length));
+                //     }
+                //     //包含指定產品
+                //     if (JSON.parse(this.inProd_Q).length > 0) {
+                //         let arr = JSON.parse(this.inProd_Q);
+                //         compRanking = compRanking.filter(m =>
+                //             //只顯示跟inProd_Q重複大於1項的排程
+                //             m.queue.filter(m1 => {
+                //                 return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                //             }).length >= 1
+                //         );
+                //     }
+                //     //排除指定產品
+                //     if (JSON.parse(this.exProd_Q).length > 0) {
+                //         let arr = JSON.parse(this.exProd_Q);
+                //         compRanking = compRanking.filter(m =>
+                //             //只顯示跟exProd_Q重複0項的排程
+                //             m.queue.filter(m1 => {
+                //                 return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                //             }).length == 0
+                //         );
+                //     }
+                //     //依總價排序
+                //     compRanking = compRanking.sort((a, b) => b.totalPriceX - a.totalPriceX);
+                // }
                 return compRanking;
             },
             btnText() {
@@ -291,6 +322,42 @@
                         }
                     });
                 }
+                console.log('移除只是順序不同的重複組合');
+                console.log(rankingData);
+
+                //篩選產品數
+                if (JSON.parse(this.queueLen_Q).length > 0) {
+                    let arr = JSON.parse(this.queueLen_Q);
+                    rankingData = rankingData.filter(m => arr.includes("" + m.queue.length));
+                }
+                console.log('篩選產品數');
+                console.log(rankingData);
+
+                //包含指定產品
+                if (JSON.parse(this.inProd_Q).length > 0) {
+                    let arr = JSON.parse(this.inProd_Q);
+                    rankingData = rankingData.filter(m =>
+                        //只顯示跟inProd_Q重複大於1項的排程
+                        m.queue.filter(m1 => {
+                            return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                        }).length >= 1
+                    );
+                }
+                console.log('包含指定產品');
+                console.log(rankingData);
+
+                //排除指定產品
+                if (JSON.parse(this.exProd_Q).length > 0) {
+                    let arr = JSON.parse(this.exProd_Q);
+                    rankingData = rankingData.filter(m =>
+                        //只顯示跟exProd_Q重複0項的排程
+                        m.queue.filter(m1 => {
+                            return arr.map(i => parseInt(i)).includes(parseInt(m1.id));
+                        }).length == 0
+                    );
+                }
+                console.log('排除指定產品');
+                console.log(rankingData);
 
                 //依總價排序
                 rankingData = rankingData.sort((a, b) => b.totalPriceX - a.totalPriceX);
@@ -299,7 +366,10 @@
 
                 this.rawRanking = rankingData;
 
-                alert("已完成計算!");
+                $("#doneAlert").show();
+                window.setTimeout(function () { 
+            $("#doneAlert").hide(); 
+                }, 3000); 
                 this.reDrawTable();
             }
         }
